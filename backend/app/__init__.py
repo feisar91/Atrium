@@ -49,7 +49,7 @@ def create_app(env: str | None = None) -> Flask:
         from .models import (  # noqa: F401
             Tenant, User, UnifiController, UnifiSite, AccessPoint,
             Portal, PortalField, GuestSession, Voucher, PlatformSetting, AuditLog,
-            TrustedDevice, UserTenantMembership, EmailSettings,
+            TrustedDevice, UserTenantMembership, EmailSettings, GoogleAuthSettings,
         )
 
     # Register API blueprints
@@ -61,6 +61,11 @@ def create_app(env: str | None = None) -> Flask:
     app.register_blueprint(portal_bp, url_prefix="/p")
     # dispatch_bp mounts /portal - the single URL configured in Unifi controllers
     app.register_blueprint(dispatch_bp)
+
+    # Google OAuth start/callback - fixed top-level paths (not nested under
+    # /p/<slug>) since Google requires one exact pre-registered redirect URI.
+    from .portal.google_auth import google_auth_bp
+    app.register_blueprint(google_auth_bp)
 
     # Root URL handler: redirect to configured URL, or fall back to the admin panel
     @app.route("/")

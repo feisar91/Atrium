@@ -59,6 +59,12 @@ class Portal(db.Model):
     auth_type = db.Column(db.String(20), nullable=False, default=AuthType.CLICK_THROUGH)
     is_active = db.Column(db.Boolean, default=True, nullable=False)
 
+    # Independent additive login option, orthogonal to auth_type - when enabled,
+    # guests see a "Sign in with Google" shortcut alongside the normal form.
+    # Only takes effect if the platform-wide GoogleAuthSettings singleton is
+    # also enabled and configured (see GoogleAuthSettings.is_configured).
+    google_auth_enabled = db.Column(db.Boolean, default=False, nullable=False)
+
     # Branding
     logo_path = db.Column(db.String(500))
     background_image_path = db.Column(db.String(500))

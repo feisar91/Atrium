@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { settingsApi, emailSettingsApi, type EmailSettings } from '../api'
+import { settingsApi, emailSettingsApi, type EmailSettings, googleAuthSettingsApi } from '../api'
 import PageHeader from '../components/ui/PageHeader'
 import Toggle from '../components/ui/Toggle'
 import { useAuthStore } from '../store/auth'
@@ -9,6 +9,7 @@ import { DATE_FORMATS } from '../lib/datetime'
 import {
   CheckCircleIcon, ExclamationCircleIcon,
   ExclamationTriangleIcon, ShieldExclamationIcon,
+  ClipboardDocumentIcon, ArrowTopRightOnSquareIcon,
 } from '@heroicons/react/24/outline'
 import clsx from 'clsx'
 
@@ -48,7 +49,7 @@ const TIMEZONES: string[] = typeof IntlAny.supportedValuesOf === 'function'
   ? IntlAny.supportedValuesOf('timeZone')
   : ['UTC']
 
-const TABS = ['General', 'Guest', 'Security', 'Email', 'Backup'] as const
+const TABS = ['General', 'Guest', 'Security', 'Email', 'Google Sign-In', 'Backup'] as const
 type Tab = typeof TABS[number]
 
 type EmailForm = {
@@ -71,6 +72,18 @@ const EMAIL_EMPTY: EmailForm = {
   from_address: '',
   from_name: '',
   encryption: 'starttls',
+}
+
+type GoogleAuthForm = {
+  enabled: boolean
+  client_id: string
+  client_secret: string
+}
+
+const GOOGLE_AUTH_EMPTY: GoogleAuthForm = {
+  enabled: false,
+  client_id: '',
+  client_secret: '',
 }
 
 export default function SettingsPage() {
@@ -189,6 +202,46 @@ export default function SettingsPage() {
   const testEmailMutation = useMutation({
     mutationFn: () => emailSettingsApi.test(testTo || undefined),
   })
+
+  // Google Sign-In settings - separate endpoint/table, same pattern as Email above.
+  const { data: googleData, isLoading: googleLoading } = useQuery({
+    queryKey: ['google_auth_settings'],
+    queryFn: () => googleAuthSettingsApi.get().then(r => r.data),
+  })
+
+  const [googleForm, setGoogleForm] = useState<GoogleAuthForm>(GOOGLE_AUTH_EMPTY)
+  const [googleSaved, setGoogleSaved] = useState(false)
+  const [redirectUriCopied, setRedirectUriCopied] = useState(false)
+
+  useEffect(() => {
+    if (googleData) {
+      setGoogleForm({
+        enabled: googleData.enabled,
+        client_id: googleData.client_id,
+        client_secret: '',
+      })
+    }
+  }, [googleData])
+
+  const saveGoogleAuthMutation = useMutation({
+    mutationFn: () => googleAuthSettingsApi.update({
+      enabled: googleForm.enabled,
+      client_id: googleForm.client_id,
+      ...(googleForm.client_secret ? { client_secret: googleForm.client_secret } : {}),
+    }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['google_auth_settings'] })
+      setGoogleSaved(true)
+      setTimeout(() => setGoogleSaved(false), 3000)
+    },
+  })
+
+  const copyRedirectUri = () => {
+    if (!googleData?.redirect_uri) return
+    navigator.clipboard.writeText(googleData.redirect_uri)
+    setRedirectUriCopied(true)
+    setTimeout(() => setRedirectUriCopied(false), 2000)
+  }
 
   const [backupPassword, setBackupPassword] = useState('')
   const downloadBackupMutation = useMutation({
@@ -587,6 +640,98 @@ export default function SettingsPage() {
               )}
             </Field>
           </Section>
+        </div>
+        )
+      )}
+
+      {/* Google Sign-In tab */}
+      {activeTab === 'Google Sign-In' && (
+        googleLoading ? <div className="text-gray-400 dark:text-gray-500 text-sm">Loading…</div> : (
+        <div className="space-y-6">
+          <Section title="Set Up Google Sign-In" subtitle="Add Google Sign-In to your portals">
+            <ol className="list-decimal list-inside space-y-1.5 text-sm text-gray-700 dark:text-gray-300">
+              <li>Open the <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline inline-flex items-center gap-1">Google Cloud Credentials console<ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" /></a> and create or select a project.</li>
+              <li>Configure the OAuth consent screen (External), adding the <code className="text-xs bg-gray-100 dark:bg-gray-900 rounded px-1 py-0.5">email</code>, <code className="text-xs bg-gray-100 dark:bg-gray-900 rounded px-1 py-0.5">profile</code>, and <code className="text-xs bg-gray-100 dark:bg-gray-900 rounded px-1 py-0.5">openid</code> scopes.</li>
+              <li>Under Credentials, click Create Credentials → OAuth client ID → Web application.</li>
+              <li>Add the Authorized redirect URI shown below, exactly as-is.</li>
+              <li>Copy the generated Client ID and Client Secret into the fields below.</li>
+            </ol>
+
+            <Field label="Authorized redirect URI" description="Register this exact URI in the Google Cloud Console step above.">
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  readOnly
+                  value={googleData?.redirect_uri ?? ''}
+                  onFocus={e => e.target.select()}
+                  className={`${input} font-mono text-xs`}
+                />
+                <button
+                  onClick={copyRedirectUri}
+                  className="border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 text-sm font-medium text-gray-700 dark:text-gray-300 px-3 py-2 rounded-lg transition-colors flex-shrink-0 flex items-center gap-1.5"
+                >
+                  <ClipboardDocumentIcon className="w-4 h-4" />
+                  {redirectUriCopied ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+            </Field>
+          </Section>
+
+          <Section title="Credentials">
+            <Field label="Enabled">
+              <Toggle
+                checked={googleForm.enabled}
+                onChange={on => setGoogleForm(f => ({ ...f, enabled: on }))}
+              />
+            </Field>
+
+            <Field label="Client ID">
+              <input
+                type="text"
+                value={googleForm.client_id}
+                onChange={e => setGoogleForm(f => ({ ...f, client_id: e.target.value }))}
+                placeholder="1234567890-abc123.apps.googleusercontent.com"
+                className={input}
+              />
+            </Field>
+
+            <Field label="Client Secret" description={googleData?.has_client_secret ? 'A secret is already saved. Leave blank to keep it.' : undefined}>
+              <input
+                type="password"
+                value={googleForm.client_secret}
+                onChange={e => setGoogleForm(f => ({ ...f, client_secret: e.target.value }))}
+                placeholder={googleData?.has_client_secret ? '••••••••' : ''}
+                autoComplete="new-password"
+                className={input}
+              />
+            </Field>
+
+            {!googleData?.is_configured && (
+              <p className="text-xs text-amber-600 font-medium">
+                Add a Client ID and Secret, then enable this, before turning it on for individual portals.
+              </p>
+            )}
+          </Section>
+
+          <div className="flex items-center gap-3 pt-2">
+            <button
+              onClick={() => saveGoogleAuthMutation.mutate()}
+              disabled={saveGoogleAuthMutation.isPending}
+              className="bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors"
+            >
+              {saveGoogleAuthMutation.isPending ? 'Saving…' : 'Save Settings'}
+            </button>
+            {googleSaved && (
+              <span className="flex items-center gap-1.5 text-sm text-green-600">
+                <CheckCircleIcon className="w-4 h-4" /> Saved
+              </span>
+            )}
+            {saveGoogleAuthMutation.isError && (
+              <span className="flex items-center gap-1.5 text-sm text-red-600">
+                <ExclamationCircleIcon className="w-4 h-4" /> Failed to save
+              </span>
+            )}
+          </div>
         </div>
         )
       )}

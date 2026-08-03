@@ -1,6 +1,6 @@
 from flask import request, jsonify, Response, current_app
 from app.extensions import db
-from app.models import PlatformSetting, GuestSession, Portal, EmailSettings, EmailEncryption
+from app.models import PlatformSetting, GuestSession, Portal, EmailSettings, EmailEncryption, GoogleAuthSettings
 from app.backup import _current_schema_revision
 from . import api_bp
 from .decorators import require_superadmin, require_admin, require_auth, get_current_user
@@ -94,6 +94,17 @@ def get_email_status():
     allowed to read the full /settings/email with its host/credentials)
     decide whether to offer emailing an account-setup invite."""
     return jsonify({"enabled": EmailSettings.get_or_create().enabled})
+
+
+@api_bp.route("/settings/google-auth/status", methods=["GET"])
+@require_admin
+def get_google_auth_status():
+    """Whether Google Sign-In is enabled+configured, with no credentials -
+    lets any portal-editing admin (not just superadmins, who are the only
+    ones allowed to read/write the full /settings/google-auth) decide
+    whether to hint that the platform-wide setup isn't finished yet."""
+    s = GoogleAuthSettings.get_or_create()
+    return jsonify({"enabled": s.enabled, "is_configured": s.is_configured})
 
 
 @api_bp.route("/settings/version", methods=["GET"])
@@ -251,6 +262,43 @@ def test_email_settings():
         return jsonify({"ok": False, "message": str(e)}), 400
     except Exception as e:
         return jsonify({"ok": False, "message": f"Failed to send: {e}"}), 502
+
+
+@api_bp.route("/settings/google-auth", methods=["GET"])
+@require_superadmin
+def get_google_auth_settings():
+    s = GoogleAuthSettings.get_or_create()
+    from app.portal.google_auth import google_redirect_uri
+    return jsonify({
+        "enabled": s.enabled,
+        "client_id": s.client_id or "",
+        "has_client_secret": bool(s._client_secret_encrypted),
+        "is_configured": s.is_configured,
+        "redirect_uri": google_redirect_uri(),
+    })
+
+
+@api_bp.route("/settings/google-auth", methods=["PUT"])
+@require_superadmin
+def update_google_auth_settings():
+    data = request.get_json(silent=True) or {}
+    s = GoogleAuthSettings.get_or_create()
+
+    if "enabled" in data:
+        s.enabled = bool(data["enabled"])
+    if "client_id" in data:
+        s.client_id = (data["client_id"] or "").strip() or None
+    if "client_secret" in data and data["client_secret"]:
+        s.client_secret = data["client_secret"]
+
+    db.session.commit()
+    from app.audit import record
+    record("settings.google_auth_update", detail={
+        "enabled": s.enabled,
+        "client_id": s.client_id,
+        "client_secret_changed": bool("client_secret" in data and data["client_secret"]),
+    })
+    return get_google_auth_settings()
 
 
 @api_bp.route("/settings/backup", methods=["POST"])

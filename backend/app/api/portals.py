@@ -87,7 +87,7 @@ def update_portal(portal_id):
     default_ints = {"connect_delay_seconds": 5, "card_opacity": 97}
 
     updatable = [
-        "name", "auth_type", "ssids", "welcome_heading", "welcome_text",
+        "name", "auth_type", "google_auth_enabled", "ssids", "welcome_heading", "welcome_text",
         "disclaimer", "button_label", "primary_color", "secondary_color",
         "font_family", "layout", "card_opacity",
         "require_terms_acceptance", "terms_checkbox_label", "terms_url",
@@ -295,6 +295,7 @@ def _portal_dict(p: Portal, include_fields=False) -> dict:
         "site_name": p.site.name if p.site else None,
         "ssids": p.ssids or [],
         "auth_type": p.auth_type,
+        "google_auth_enabled": p.google_auth_enabled,
         "is_active": p.is_active,
         "logo_path": p.logo_path,
         "background_image_path": p.background_image_path,

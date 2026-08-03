@@ -16,6 +16,7 @@ const ACTION_LABELS: Record<string, string> = {
   'auth.password_reset_email_failed': 'Password reset email failed',
   'settings.update': 'Settings updated',
   'settings.email_update': 'Email settings updated',
+  'settings.google_auth_update': 'Google Sign-In settings updated',
   'settings.backup_downloaded': 'Backup downloaded',
   'setup.restored': 'Restored from backup',
   'portal.create': 'Portal created',

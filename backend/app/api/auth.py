@@ -294,7 +294,14 @@ def forgot_password():
         return generic
 
     token = _reset_serializer().dumps({"uid": user.id, "fp": _password_fingerprint(user)})
-    reset_url = f"{request.host_url.rstrip('/')}/admin/reset-password?token={token}"
+    # X-Forwarded-Proto, not request.scheme - this app always sits behind the
+    # bundled nginx, which only ever speaks plain HTTP to gunicorn itself, so
+    # request.scheme is "http" even when an SSL-terminating proxy sits in
+    # front of nginx. nginx forwards the real scheme in this header (see
+    # nginx/nginx.conf.template), sanitized against TRUSTED_PROXY_CIDR before
+    # it ever reaches Flask.
+    scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+    reset_url = f"{scheme}://{request.host}/admin/reset-password?token={token}"
 
     try:
         from app.mailer import send_email
@@ -354,7 +361,9 @@ def send_invite_email(user: User) -> None:
     was created with an unknown/unusable password, so the caller (create_user)
     needs to know and roll back rather than leave it orphaned."""
     token = _invite_serializer().dumps({"uid": user.id, "fp": _password_fingerprint(user)})
-    setup_url = f"{request.host_url.rstrip('/')}/admin/setup-account?token={token}"
+    # See the identical comment in forgot_password() above.
+    scheme = request.headers.get("X-Forwarded-Proto", request.scheme)
+    setup_url = f"{scheme}://{request.host}/admin/setup-account?token={token}"
     from app.mailer import send_email
     send_email(
         user.email,

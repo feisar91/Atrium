@@ -4,13 +4,14 @@ from .controller import UnifiController, ControllerOwnerType, ControllerAuthMode
 from .site import UnifiSite
 from .access_point import AccessPoint
 from .portal import Portal, PortalField, AuthType, FieldType, Layout, GOOGLE_FONTS
-from .guest import GuestSession
+from .guest import GuestSession, GuestAuthMethod
 from .voucher import Voucher
 from .setting import PlatformSetting
 from .audit_log import AuditLog
 from .user_tenant_membership import UserTenantMembership
 from .trusted_device import TrustedDevice
 from .email_settings import EmailSettings, EmailEncryption
+from .google_auth_settings import GoogleAuthSettings
 
 __all__ = [
     "Tenant",
@@ -27,6 +28,7 @@ __all__ = [
     "Layout",
     "GOOGLE_FONTS",
     "GuestSession",
+    "GuestAuthMethod",
     "Voucher",
     "PlatformSetting",
     "AuditLog",
@@ -34,4 +36,5 @@ __all__ = [
     "TrustedDevice",
     "EmailSettings",
     "EmailEncryption",
+    "GoogleAuthSettings",
 ]

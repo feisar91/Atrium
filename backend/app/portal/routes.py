@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from flask import render_template, render_template_string, request, redirect, url_for, current_app, jsonify
 from itsdangerous import URLSafeTimedSerializer, BadSignature, SignatureExpired
 from app.extensions import db
-from app.models import Portal, PortalField, GuestSession, Voucher, AuthType, PlatformSetting
+from app.models import Portal, PortalField, GuestSession, Voucher, AuthType, PlatformSetting, GuestAuthMethod
 from app.services.unifi import UnifiClient, UnifiError
 from . import portal_bp
 import logging
@@ -62,6 +62,40 @@ def _connect_serializer() -> URLSafeTimedSerializer:
     return URLSafeTimedSerializer(current_app.config["SECRET_KEY"], salt=_CONNECT_TOKEN_SALT)
 
 
+def _resolve_session_params(portal: Portal):
+    """Session duration and bandwidth limits for a guest connecting to this
+    portal - portal override, falling back to the platform default. Shared
+    by connect() (form/voucher path) and the Google OAuth callback."""
+    default_duration = int(_get_setting("default_session_duration", "60"))
+    duration = portal.session_duration or default_duration
+
+    def _kbps(portal_val, setting_key):
+        if portal_val and portal_val > 0:
+            return portal_val
+        v = _get_setting(setting_key, "")
+        try:
+            n = int(v)
+            return n if n > 0 else None
+        except (ValueError, TypeError):
+            return None
+
+    rate_down = _kbps(portal.rate_limit_down, "default_rate_limit_down")
+    rate_up = _kbps(portal.rate_limit_up, "default_rate_limit_up")
+    return duration, rate_down, rate_up
+
+
+def _show_google_button(portal: Portal) -> bool:
+    """Graceful-degrade gate: the Google button only renders when the portal
+    opted in AND the platform-wide Google OAuth config is enabled/configured.
+    If an admin disables/clears the platform config after enabling it on a
+    portal, this silently stops rendering the button - no dead link."""
+    if not portal.google_auth_enabled:
+        return False
+    from app.models import GoogleAuthSettings
+    settings = GoogleAuthSettings.get_or_create()
+    return settings.enabled and settings.is_configured
+
+
 @portal_bp.route("/<slug>")
 def show_portal(slug):
     portal = Portal.query.filter_by(slug=slug, is_active=True).first_or_404()
@@ -87,6 +121,7 @@ def show_portal(slug):
         redirect_url=redirect_url,
         t=t,
         error=None,
+        show_google_button=_show_google_button(portal),
     )
 
 
@@ -141,24 +176,11 @@ def connect(slug):
             redirect_url=redirect_url,
             t=t,
             error=" ".join(errors),
+            show_google_button=_show_google_button(portal),
         ), 422
 
     # ── Determine session duration and bandwidth limits ───────────────────────
-    default_duration = int(_get_setting("default_session_duration", "60"))
-    duration = portal.session_duration or default_duration
-
-    def _kbps(portal_val, setting_key):
-        if portal_val and portal_val > 0:
-            return portal_val
-        v = _get_setting(setting_key, "")
-        try:
-            n = int(v)
-            return n if n > 0 else None
-        except (ValueError, TypeError):
-            return None
-
-    rate_down = _kbps(portal.rate_limit_down, "default_rate_limit_down")
-    rate_up = _kbps(portal.rate_limit_up, "default_rate_limit_up")
+    duration, rate_down, rate_up = _resolve_session_params(portal)
 
     if voucher:
         duration = voucher.duration_minutes
@@ -272,6 +294,7 @@ def finalize(slug):
         ssid=payload.get("ssid"),
         voucher_id=voucher.id if voucher else None,
         form_data=payload.get("form_data") or {},
+        auth_method=payload.get("auth_method", GuestAuthMethod.FORM),
         auth_success=auth_success,
         auth_error=auth_error,
     )

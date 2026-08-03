@@ -2,6 +2,12 @@ from app.extensions import db
 from datetime import datetime, timezone
 
 
+class GuestAuthMethod:
+    FORM = "form"
+    GOOGLE = "google"
+    ALL = [FORM, GOOGLE]
+
+
 class GuestSession(db.Model):
     __tablename__ = "guest_sessions"
 
@@ -23,6 +29,9 @@ class GuestSession(db.Model):
 
     # Captured form data as a key→value dict
     form_data = db.Column(db.JSON, default=dict)
+
+    # How this guest authenticated: "form" (default) or "google".
+    auth_method = db.Column(db.String(20), default=GuestAuthMethod.FORM, nullable=False)
 
     authorized_at = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
 

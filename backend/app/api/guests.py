@@ -1,11 +1,12 @@
 import csv
 import io
 import math
+import re
 from collections import defaultdict, Counter
 from datetime import datetime, timezone, timedelta
 from flask import request, jsonify, Response
 from app.extensions import db
-from app.models import GuestSession, Portal, AccessPoint, PlatformSetting
+from app.models import GuestSession, Portal, AccessPoint, PlatformSetting, GuestAuthMethod
 from app.models import PortalField
 from app.services.unifi import UnifiClient, UnifiError
 from . import api_bp
@@ -167,6 +168,12 @@ def guests_summary(portal_id):
     returning = sum(1 for c in mac_counts.values() if c > 1)
     return_visitor_rate = round(returning / total_unique * 100, 1) if total_unique else 0.0
 
+    # Sign-in method breakdown (form vs Google)
+    method_counts = Counter(s.auth_method or GuestAuthMethod.FORM for s in sessions)
+    auth_methods = [
+        {"method": m, "count": c} for m, c in method_counts.most_common()
+    ]
+
     # Auth failure stats
     failed = [s for s in sessions if not s.auth_success]
     error_counts = Counter(s.auth_error or "Unknown error" for s in failed)
@@ -196,6 +203,7 @@ def guests_summary(portal_id):
         "sessions_by_hour": sessions_by_hour,
         "sessions_by_dow": sessions_by_dow,
         "auth_failures": auth_failures,
+        "auth_methods": auth_methods,
         "top_aps": top_aps,
         "field_counts": field_counts,
     })
@@ -371,17 +379,25 @@ def export_guests(portal_id):
 
     output = io.StringIO()
     writer = csv.writer(output)
-    writer.writerow(["Date", "MAC Address", "IP Address", "SSID", "Auth Success"] + field_labels)
+    writer.writerow(
+        ["Date", "MAC Address", "IP Address", "SSID", "Auth Success"] + field_labels
+        + ["Google Email", "Google Name"]
+    )
     for s in sessions:
         row = [s.authorized_at.isoformat(), s.mac_address, s.ip_address or "", s.ssid or "", s.auth_success]
         for key in field_keys:
             row.append((s.form_data or {}).get(key, ""))
+        row.append((s.form_data or {}).get("google_email", ""))
+        row.append((s.form_data or {}).get("google_name", ""))
         writer.writerow(row)
+
+    name_slug = re.sub(r"[^\w\s-]", "", portal.name.lower().strip())
+    name_slug = re.sub(r"[\s_-]+", "-", name_slug).strip("-") or f"portal-{portal_id}"
 
     return Response(
         output.getvalue(),
         mimetype="text/csv",
-        headers={"Content-Disposition": f"attachment; filename=guests-portal-{portal_id}.csv"},
+        headers={"Content-Disposition": f'attachment; filename="guests-{name_slug}.csv"'},
     )
 
 
@@ -440,6 +456,7 @@ def _session_dict(s: GuestSession) -> dict:
         "ap_mac": s.ap_mac,
         "ssid": s.ssid,
         "form_data": s.form_data or {},
+        "auth_method": s.auth_method,
         "auth_success": s.auth_success,
         "auth_error": s.auth_error,
         "authorized_at": s.authorized_at.isoformat(),

@@ -108,6 +108,7 @@ export interface Portal {
   site_name: string | null
   ssids: string[]
   auth_type: AuthType
+  google_auth_enabled: boolean
   is_active: boolean
   logo_path: string | null
   background_image_path: string | null
@@ -153,6 +154,7 @@ export interface GuestSession {
   ap_mac: string | null
   ssid: string | null
   form_data: Record<string, string>
+  auth_method: string
   auth_success: boolean
   auth_error: string | null
   authorized_at: string
@@ -183,6 +185,7 @@ export interface AnalyticsSummary {
     top_errors: Array<{ error: string; count: number }>
   }
   top_aps: Array<{ ap_mac: string; name: string; count: number }>
+  auth_methods: Array<{ method: string; count: number }>
   field_counts: Record<string, {
     label: string
     field_type: string

@@ -152,10 +152,13 @@ export const guestsApi = {
       params,
       responseType: 'blob',
     })
+    const disposition = res.headers['content-disposition'] as string | undefined
+    const match = disposition?.match(/filename="([^"]+)"/)
+    const filename = match?.[1] ?? `guests-portal-${portalId}.csv`
     const url = URL.createObjectURL(res.data)
     const a = document.createElement('a')
     a.href = url
-    a.download = `guests-portal-${portalId}.csv`
+    a.download = filename
     a.click()
     URL.revokeObjectURL(url)
   },
@@ -230,6 +233,23 @@ export const emailSettingsApi = {
   update: (data: Partial<EmailSettings> & { password?: string }) =>
     api.put<EmailSettings>('/settings/email', data),
   test: (to?: string) => api.post<{ ok: boolean; message: string }>('/settings/email/test', { to }),
+}
+
+// ── Google Sign-In Settings ─────────────────────────────────────────────────
+
+export type GoogleAuthSettings = {
+  enabled: boolean
+  client_id: string
+  has_client_secret: boolean
+  is_configured: boolean
+  redirect_uri: string
+}
+
+export const googleAuthSettingsApi = {
+  get: () => api.get<GoogleAuthSettings>('/settings/google-auth'),
+  update: (data: Partial<GoogleAuthSettings> & { client_secret?: string }) =>
+    api.put<GoogleAuthSettings>('/settings/google-auth', data),
+  status: () => api.get<{ enabled: boolean; is_configured: boolean }>('/settings/google-auth/status'),
 }
 
 // ── Audit Log ─────────────────────────────────────────────────────────────────

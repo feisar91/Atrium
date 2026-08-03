@@ -3,7 +3,7 @@ import { useParams, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import clsx from 'clsx'
-import { portalsApi } from '../../api'
+import { portalsApi, googleAuthSettingsApi } from '../../api'
 import { ExclamationTriangleIcon, ArrowLeftIcon } from '@heroicons/react/24/outline'
 import Toggle from '../../components/ui/Toggle'
 import PageHeader from '../../components/ui/PageHeader'
@@ -46,9 +46,18 @@ export default function PortalEditorPage() {
     enabled: !!portal,
   })
 
+  // Read-only status (not the full credentials, which are superadmin-only) -
+  // just used to hint whether the platform-wide Google config is ready
+  // before an admin flips this portal's toggle on.
+  const { data: googleAuthStatus } = useQuery({
+    queryKey: ['google_auth_settings_status'],
+    queryFn: () => googleAuthSettingsApi.status().then(r => r.data),
+  })
+
   const [form, setForm] = useState({
     name: '',
     auth_type: 'click_through' as AuthType,
+    google_auth_enabled: false,
     ssids: [] as string[],
     welcome_heading: '',
     welcome_text: '',
@@ -91,6 +100,7 @@ export default function PortalEditorPage() {
       setForm({
         name: portal.name,
         auth_type: portal.auth_type,
+        google_auth_enabled: portal.google_auth_enabled,
         ssids: portal.ssids || [],
         welcome_heading: portal.welcome_heading || '',
         welcome_text: portal.welcome_text || '',
@@ -219,6 +229,19 @@ export default function PortalEditorPage() {
                     <option value="both">Both</option>
                   </select>
                 </Field>
+
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+                  <Toggle
+                    checked={form.google_auth_enabled}
+                    onChange={on => setForm(p => ({ ...p, google_auth_enabled: on }))}
+                    label='Allow "Sign in with Google"'
+                    description={
+                      !googleAuthStatus?.is_configured || !googleAuthStatus?.enabled
+                        ? 'Configure and enable Google Sign-In in Settings first.'
+                        : 'Guests can tap a Google button as a shortcut, skipping custom fields and voucher entry.'
+                    }
+                  />
+                </div>
 
                 <Field label="SSID filter">
                   {ssidsData?.error && (

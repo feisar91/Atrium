@@ -14,6 +14,20 @@ import { formatDateTime } from '../../lib/datetime'
 
 const input = 'w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500'
 
+// "form" covers both the click-through form and voucher entry - anything
+// that isn't Google sign-in (see GuestAuthMethod on the backend). Google
+// gets its own brand blue (matching the "G" mark on the guest-facing
+// button); everything else is a neutral gray - achromatic vs. a single
+// hue reads clearly regardless of color vision.
+const AUTH_METHOD_LABELS: Record<string, string> = {
+  form: 'Form / Voucher',
+  google: 'Google',
+}
+const AUTH_METHOD_COLORS: Record<string, string> = {
+  form: '#94A3B8',
+  google: '#4285F4',
+}
+
 // Format hour label: 0 → "12am", 13 → "1pm"
 function fmtHour(h: number) {
   if (h === 0) return '12am'
@@ -219,9 +233,35 @@ export default function AnalyticsPage() {
         </div>
       )}
 
-      {/* Top APs + Auth failures side by side */}
-      {summary && (summary.top_aps.length > 0 || summary.auth_failures.count > 0) && (
+      {/* Top APs + Sign-in method + Auth failures */}
+      {summary && (summary.top_aps.length > 0 || summary.auth_methods.length > 0 || summary.auth_failures.count > 0) && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {summary.auth_methods.length > 1 && (
+            <ChartCard title="Sign-in Method" subtitle={`${summary.total_sessions.toLocaleString()} session${summary.total_sessions !== 1 ? 's' : ''}`}>
+              <div className="space-y-2 mt-1">
+                {summary.auth_methods.map(({ method, count }) => (
+                  <div key={method} className="flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="text-xs text-gray-700 dark:text-gray-300">{AUTH_METHOD_LABELS[method] ?? method}</span>
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 ml-2 flex-shrink-0">{count}</span>
+                      </div>
+                      <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full"
+                          style={{
+                            width: `${Math.round(count / summary.total_sessions * 100)}%`,
+                            backgroundColor: AUTH_METHOD_COLORS[method] ?? '#9CA3AF',
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </ChartCard>
+          )}
+
           {summary.top_aps.length > 0 && (
             <ChartCard title="Top Access Points" subtitle="Sessions per AP">
               <ResponsiveContainer width="100%" height={Math.min(40 + summary.top_aps.length * 32, 300)}>
@@ -321,6 +361,9 @@ export default function AnalyticsPage() {
                   <th className="px-6 py-3 text-left whitespace-nowrap">MAC Address</th>
                   <th className="px-6 py-3 text-left whitespace-nowrap">IP</th>
                   <th className="px-6 py-3 text-left whitespace-nowrap">SSID</th>
+                  <th className="px-6 py-3 text-left whitespace-nowrap">Sign-in</th>
+                  <th className="px-6 py-3 text-left whitespace-nowrap">Google Email</th>
+                  <th className="px-6 py-3 text-left whitespace-nowrap">Google Name</th>
                   {fieldDefs.map(f => (
                     <th key={f.field_key} className="px-6 py-3 text-left whitespace-nowrap">{f.label}</th>
                   ))}
@@ -347,6 +390,20 @@ export default function AnalyticsPage() {
                     </td>
                     <td className="px-6 py-3 text-gray-500 dark:text-gray-400 text-xs">{session.ip_address || '-'}</td>
                     <td className="px-6 py-3 text-gray-500 dark:text-gray-400 text-xs">{session.ssid || '-'}</td>
+                    <td className="px-6 py-3 text-xs whitespace-nowrap">
+                      <span
+                        className="inline-flex items-center gap-1.5 text-gray-700 dark:text-gray-300"
+                        title={AUTH_METHOD_LABELS[session.auth_method] ?? session.auth_method}
+                      >
+                        <span
+                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: AUTH_METHOD_COLORS[session.auth_method] ?? '#9CA3AF' }}
+                        />
+                        {AUTH_METHOD_LABELS[session.auth_method] ?? session.auth_method}
+                      </span>
+                    </td>
+                    <td className="px-6 py-3 text-gray-500 dark:text-gray-400 text-xs">{session.form_data?.google_email || '-'}</td>
+                    <td className="px-6 py-3 text-gray-500 dark:text-gray-400 text-xs">{session.form_data?.google_name || '-'}</td>
                     {fieldDefs.map(f => (
                       <td key={f.field_key} className="px-6 py-3 text-gray-700 dark:text-gray-300 text-xs">
                         {session.form_data?.[f.field_key] || '-'}
@@ -356,7 +413,7 @@ export default function AnalyticsPage() {
                 ))}
                 {!sessions?.items.length && (
                   <tr>
-                    <td colSpan={4 + fieldDefs.length} className="px-6 py-8 text-center text-gray-400 dark:text-gray-500">
+                    <td colSpan={7 + fieldDefs.length} className="px-6 py-8 text-center text-gray-400 dark:text-gray-500">
                       No sessions match the current filters.
                     </td>
                   </tr>

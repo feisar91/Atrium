@@ -297,7 +297,7 @@ export default function PortalEditorPage() {
                     description={form.is_active ? undefined : 'Portal is disabled and will not accept new connections.'}
                     activeColor="bg-blue-600"
                   />
-                  <div className="border-t border-gray-100" />
+                  <div className="border-t border-gray-100 dark:border-gray-700" />
                   <Toggle
                     checked={form.maintenance_mode}
                     onChange={on => setForm(p => ({ ...p, maintenance_mode: on }))}

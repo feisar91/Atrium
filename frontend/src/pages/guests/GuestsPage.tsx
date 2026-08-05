@@ -27,7 +27,7 @@ function formatUptime(seconds: number | null): string {
 }
 
 function SignalBars({ signal }: { signal: number | null }) {
-  if (signal == null) return <span className="text-gray-300">-</span>
+  if (signal == null) return <span className="text-gray-300 dark:text-gray-600">-</span>
   const quality = signal >= -60 ? 'excellent' : signal >= -70 ? 'good' : signal >= -80 ? 'fair' : 'poor'
   const color = quality === 'excellent' ? 'text-green-500' : quality === 'good' ? 'text-blue-500' : quality === 'fair' ? 'text-yellow-500' : 'text-red-400'
   return (
@@ -119,7 +119,7 @@ export default function GuestsPage() {
           <select
             value={refetchInterval}
             onChange={e => setRefetchInterval(Number(e.target.value))}
-            className="border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="border border-gray-300 dark:border-gray-700 rounded-lg px-2.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100"
           >
             {REFRESH_OPTIONS.map(o => (
               <option key={o.value} value={o.value}>{o.label}</option>
@@ -155,10 +155,10 @@ export default function GuestsPage() {
                 <th className="px-6 py-3 text-left">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {devices.map(device => (
                 <tr key={device.mac} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-6 py-3 text-gray-800 font-medium">
+                  <td className="px-6 py-3 text-gray-800 dark:text-gray-200 font-medium">
                     <div className="flex items-center gap-2">
                       {device.hostname || <span className="text-gray-400 dark:text-gray-500 italic">unknown</span>}
                       {!device.authorized && (

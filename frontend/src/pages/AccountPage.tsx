@@ -95,7 +95,7 @@ export default function AccountPage() {
       <PageHeader title="Account" subtitle="Your profile and security settings" />
 
       {/* 2FA */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
         <div className="px-6 py-4">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Two-Factor Authentication</h2>
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">Protect your account with an authenticator app</p>
@@ -104,7 +104,7 @@ export default function AccountPage() {
           <div className="flex items-center gap-3">
             {totpEnabled
               ? <ShieldCheckIcon className="w-8 h-8 text-green-500 flex-shrink-0" />
-              : <ShieldExclamationIcon className="w-8 h-8 text-gray-300 flex-shrink-0" />
+              : <ShieldExclamationIcon className="w-8 h-8 text-gray-300 dark:text-gray-600 flex-shrink-0" />
             }
             <div>
               <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -132,7 +132,7 @@ export default function AccountPage() {
       </div>
 
       {/* Change password */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100">
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-100 dark:divide-gray-700">
         <div className="px-6 py-4">
           <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Change Password</h2>
         </div>

@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
     onError: () => setSent(true), // always show the same generic state - never reveal whether the email exists
   })
 
-  const inp = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+  const inp = 'w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500'
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #13233a 100%)' }}>
@@ -37,27 +37,27 @@ export default function ForgotPasswordPage() {
         </div>
 
         {sent ? (
-          <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-5 text-center">
-            <h2 className="text-xl font-semibold text-gray-900">Check your email</h2>
-            <p className="text-sm text-gray-500">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-5 text-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Check your email</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               If an account exists for that email, we've sent a link to reset your password. It expires in 1 hour.
             </p>
             <button
               onClick={() => navigate('/login')}
-              className="w-full text-sm text-gray-500 hover:text-gray-700"
+              className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               ← Back to sign in
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="bg-white rounded-2xl shadow-2xl p-8 space-y-5">
+          <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-5">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Forgot password?</h2>
-              <p className="text-sm text-gray-500 mt-1">Enter your email and we'll send you a reset link.</p>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Forgot password?</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Enter your email and we'll send you a reset link.</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
               <input {...register('email')} type="email" autoComplete="email" autoFocus className={inp} />
               {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
             </div>
@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
             </button>
 
             <button type="button" onClick={() => navigate('/login')}
-              className="w-full text-sm text-gray-500 hover:text-gray-700">
+              className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
               ← Back to sign in
             </button>
           </form>

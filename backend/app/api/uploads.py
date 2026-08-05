@@ -78,6 +78,25 @@ def upload_background(portal_id):
     return jsonify({"path": path})
 
 
+@api_bp.route("/portals/<int:portal_id>/upload/favicon", methods=["POST"])
+@require_admin
+def upload_favicon(portal_id):
+    portal = Portal.query.get_or_404(portal_id)
+    _assert_portal_access(portal)
+
+    if "file" not in request.files:
+        return jsonify({"error": "No file provided"}), 400
+
+    file = request.files["file"]
+    if not file.filename or not _allowed(file.filename):
+        return jsonify({"error": "Invalid file type"}), 400
+
+    path = _save_image(file, f"portals/{portal_id}/favicon")
+    portal.favicon_path = path
+    db.session.commit()
+    return jsonify({"path": path})
+
+
 @api_bp.route("/portals/<int:portal_id>/upload/promo_banner", methods=["POST"])
 @require_admin
 def upload_promo_banner(portal_id):

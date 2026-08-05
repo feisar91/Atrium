@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{{ portal.welcome_heading or 'Welcome' }}</title>
+  {% if portal.favicon_path %}<link rel="icon" href="{{ portal.favicon_path }}">{% endif %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family={{ (portal.font_family or 'Inter') | replace(' ', '+') }}:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,6 +14,9 @@
     :root {
       --primary: {{ portal.primary_color or '#3B82F6' }};
       --secondary: {{ portal.secondary_color or '#1E40AF' }};
+      --heading-text: {{ portal.heading_text_color or '#111111' }};
+      --body-text: {{ portal.body_text_color or '#374151' }};
+      --button-text: {{ portal.button_text_color or '#FFFFFF' }};
     }
 
     body {
@@ -91,12 +95,12 @@
       font-size: 1.5rem;
       font-weight: 700;
       text-align: center;
-      color: #111;
+      color: var(--heading-text);
       margin-bottom: 0.5rem;
     }
 
     .welcome-text {
-      color: #555;
+      color: var(--body-text);
       text-align: center;
       margin-bottom: 1.5rem;
       font-size: 0.95rem;
@@ -121,7 +125,7 @@
       display: block;
       font-size: 0.875rem;
       font-weight: 500;
-      color: #374151;
+      color: var(--body-text);
       margin-bottom: 0.35rem;
     }
 
@@ -180,7 +184,7 @@
     .voucher-section h3 {
       font-size: 0.9rem;
       font-weight: 600;
-      color: #374151;
+      color: var(--body-text);
       margin-bottom: 0.75rem;
     }
 
@@ -189,7 +193,7 @@
       width: 100%;
       padding: 0.75rem;
       background: var(--primary);
-      color: #fff;
+      color: var(--button-text);
       font-size: 1rem;
       font-weight: 600;
       border: none;
@@ -251,7 +255,7 @@
       padding-top: 1rem;
       border-top: 1px solid #E5E7EB;
       font-size: 0.78rem;
-      color: #6B7280;
+      color: var(--body-text);
       line-height: 1.5;
     }
 

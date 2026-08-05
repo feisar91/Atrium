@@ -68,8 +68,15 @@ class Portal(db.Model):
     # Branding
     logo_path = db.Column(db.String(500))
     background_image_path = db.Column(db.String(500))
+    favicon_path = db.Column(db.String(500))
     primary_color = db.Column(db.String(7), default="#3B82F6")
     secondary_color = db.Column(db.String(7), default="#1E40AF")
+    # Text colors for the guest page - separate from primary/secondary since
+    # those drive backgrounds/buttons, not readability of copy sitting on top
+    # of a (possibly dark or custom-colored) card/background.
+    heading_text_color = db.Column(db.String(7), default="#111111")
+    body_text_color = db.Column(db.String(7), default="#374151")
+    button_text_color = db.Column(db.String(7), default="#FFFFFF")
     font_family = db.Column(db.String(100), default="Inter")
     layout = db.Column(db.String(20), nullable=False, default=Layout.CENTERED)
     # Card background opacity, 0-100. Lower values reveal more of the

@@ -112,8 +112,12 @@ export interface Portal {
   is_active: boolean
   logo_path: string | null
   background_image_path: string | null
+  favicon_path: string | null
   primary_color: string
   secondary_color: string
+  heading_text_color: string
+  body_text_color: string
+  button_text_color: string
   font_family: string | null
   layout: Layout
   card_opacity: number

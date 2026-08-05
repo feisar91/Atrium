@@ -124,6 +124,11 @@ export const portalsApi = {
     fd.append('file', file)
     return api.post<{ path: string }>(`/portals/${portalId}/upload/background`, fd)
   },
+  uploadFavicon: (portalId: number, file: File) => {
+    const fd = new FormData()
+    fd.append('file', file)
+    return api.post<{ path: string }>(`/portals/${portalId}/upload/favicon`, fd)
+  },
   uploadPromoBanner: (portalId: number, file: File) => {
     const fd = new FormData()
     fd.append('file', file)

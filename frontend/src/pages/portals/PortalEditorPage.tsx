@@ -29,6 +29,7 @@ export default function PortalEditorPage() {
   const logoRef = useRef<HTMLInputElement>(null)
   const bgRef = useRef<HTMLInputElement>(null)
   const bannerRef = useRef<HTMLInputElement>(null)
+  const faviconRef = useRef<HTMLInputElement>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const activeTab: Tab = (TABS as readonly string[]).includes(searchParams.get('tab') ?? '')
     ? searchParams.get('tab') as Tab
@@ -65,6 +66,9 @@ export default function PortalEditorPage() {
     button_label: '',
     primary_color: '#3B82F6',
     secondary_color: '#1E40AF',
+    heading_text_color: '#111111',
+    body_text_color: '#374151',
+    button_text_color: '#FFFFFF',
     font_family: 'Inter',
     layout: 'centered' as Layout,
     card_opacity: 97,
@@ -108,6 +112,9 @@ export default function PortalEditorPage() {
         button_label: portal.button_label || 'Connect',
         primary_color: portal.primary_color,
         secondary_color: portal.secondary_color,
+        heading_text_color: portal.heading_text_color || '#111111',
+        body_text_color: portal.body_text_color || '#374151',
+        button_text_color: portal.button_text_color || '#FFFFFF',
         font_family: portal.font_family || 'Inter',
         layout: portal.layout || 'centered',
         card_opacity: portal.card_opacity,
@@ -158,6 +165,16 @@ export default function PortalEditorPage() {
       await portalsApi.uploadBackground(portalId, file)
       qc.invalidateQueries({ queryKey: ['portal', portalId] })
       toast.success('Background uploaded')
+    } catch {
+      toast.error('Upload failed')
+    }
+  }
+
+  const uploadFavicon = async (file: File) => {
+    try {
+      await portalsApi.uploadFavicon(portalId, file)
+      qc.invalidateQueries({ queryKey: ['portal', portalId] })
+      toast.success('Favicon uploaded')
     } catch {
       toast.error('Upload failed')
     }
@@ -431,6 +448,40 @@ export default function PortalEditorPage() {
                   </Field>
                 </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <Field label="Heading Text Colour">
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color" value={form.heading_text_color}
+                        onChange={e => setForm(p => ({ ...p, heading_text_color: e.target.value }))}
+                        className="w-10 h-10 rounded cursor-pointer border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                      />
+                      <input {...f('heading_text_color')} className={`${input} font-mono`} />
+                    </div>
+                  </Field>
+                  <Field label="Body Text Colour">
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color" value={form.body_text_color}
+                        onChange={e => setForm(p => ({ ...p, body_text_color: e.target.value }))}
+                        className="w-10 h-10 rounded cursor-pointer border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                      />
+                      <input {...f('body_text_color')} className={`${input} font-mono`} />
+                    </div>
+                  </Field>
+                  <Field label="Button Text Colour">
+                    <div className="flex gap-2 items-center">
+                      <input
+                        type="color" value={form.button_text_color}
+                        onChange={e => setForm(p => ({ ...p, button_text_color: e.target.value }))}
+                        className="w-10 h-10 rounded cursor-pointer border border-gray-200 dark:border-gray-700 flex-shrink-0"
+                      />
+                      <input {...f('button_text_color')} className={`${input} font-mono`} />
+                    </div>
+                  </Field>
+                </div>
+                <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">Heading and body colours apply to the welcome text, labels, and disclaimer on the guest page - button colour applies to the Connect button's text.</p>
+
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Field label="Font">
                     <select {...f('font_family')} className={input}>
@@ -490,6 +541,23 @@ export default function PortalEditorPage() {
                     </button>
                     <input ref={bgRef} type="file" accept="image/*" className="hidden"
                       onChange={e => e.target.files?.[0] && uploadBg(e.target.files[0])} />
+                  </div>
+                </Field>
+
+                <Field label="Favicon">
+                  <div className="flex items-center gap-4">
+                    {portal.favicon_path
+                      ? <img src={portal.favicon_path} alt="Favicon" className="h-8 w-8 object-contain border rounded p-1" />
+                      : <div className="h-8 w-8 rounded border border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center text-[9px] text-gray-400 dark:text-gray-500">None</div>
+                    }
+                    <button
+                      onClick={() => faviconRef.current?.click()}
+                      className="text-sm border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 rounded-lg px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    >
+                      {portal.favicon_path ? 'Replace' : 'Upload Favicon'}
+                    </button>
+                    <input ref={faviconRef} type="file" accept="image/*" className="hidden"
+                      onChange={e => e.target.files?.[0] && uploadFavicon(e.target.files[0])} />
                   </div>
                 </Field>
 

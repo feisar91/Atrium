@@ -39,7 +39,7 @@ export default function ResetPasswordPage() {
     },
   })
 
-  const inp = 'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+  const inp = 'w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500'
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: 'linear-gradient(135deg, #1e3a5f 0%, #13233a 100%)' }}>
@@ -50,29 +50,29 @@ export default function ResetPasswordPage() {
         </div>
 
         {!token ? (
-          <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-5 text-center">
-            <h2 className="text-xl font-semibold text-gray-900">Invalid link</h2>
-            <p className="text-sm text-gray-500">This password reset link is missing its token.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-5 text-center">
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Invalid link</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">This password reset link is missing its token.</p>
             <button onClick={() => navigate('/forgot-password')}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 rounded-lg transition-colors">
               Request a new link
             </button>
           </div>
         ) : (
-          <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="bg-white rounded-2xl shadow-2xl p-8 space-y-4">
+          <form onSubmit={handleSubmit((d) => mutation.mutate(d))} className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-4">
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Set a new password</h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Set a new password</h2>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">New password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">New password</label>
               <input {...register('password')} type="password" autoComplete="new-password" autoFocus className={inp} />
-              <p className="text-xs text-gray-400 mt-1">At least 8 characters, including a number and special character (e.g. ! @ # $)</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">At least 8 characters, including a number and special character (e.g. ! @ # $)</p>
               {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm password</label>
               <input {...register('confirm_password')} type="password" autoComplete="new-password" className={inp} />
               {errors.confirm_password && <p className="text-red-500 text-xs mt-1">{errors.confirm_password.message}</p>}
             </div>
@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
             </button>
 
             <button type="button" onClick={() => navigate('/login')}
-              className="w-full text-sm text-gray-500 hover:text-gray-700">
+              className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
               ← Back to sign in
             </button>
           </form>

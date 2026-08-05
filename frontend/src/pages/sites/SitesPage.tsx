@@ -70,7 +70,7 @@ export default function SitesPage() {
                 <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {filteredSites?.map(site => (
                 <tr key={site.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="px-6 py-3">
@@ -83,7 +83,7 @@ export default function SitesPage() {
                       <select
                         value={site.tenant_id ?? ''}
                         onChange={e => assignMutation.mutate({ id: site.id, tenant_id: e.target.value ? parseInt(e.target.value) : null })}
-                        className="text-xs border border-gray-200 dark:border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                        className="text-xs border border-gray-200 dark:border-gray-700 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-400 dark:bg-gray-900 dark:text-gray-100"
                       >
                         <option value="">Unassigned</option>
                         {tenants?.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}

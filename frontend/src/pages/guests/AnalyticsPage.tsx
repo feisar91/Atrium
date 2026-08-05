@@ -344,7 +344,7 @@ export default function AnalyticsPage() {
 
       {/* Session log */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-        <div className="px-6 py-4 border-b border-gray-100">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
             Session Log
             {sessions && <span className="ml-2 text-gray-400 dark:text-gray-500 font-normal">{sessions.total} records</span>}
@@ -369,7 +369,7 @@ export default function AnalyticsPage() {
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {sessions?.items.map(session => (
                   <tr key={session.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-3 text-gray-500 dark:text-gray-400 text-xs whitespace-nowrap">
@@ -423,7 +423,7 @@ export default function AnalyticsPage() {
           )}
         </div>
         {sessions && sessions.pages > 1 && (
-          <div className="flex items-center justify-center gap-2 p-4 border-t border-gray-100">
+          <div className="flex items-center justify-center gap-2 p-4 border-t border-gray-100 dark:border-gray-700">
             <button disabled={page === 1} onClick={() => setPage(p => p - 1)}
               className="px-3 py-1.5 text-sm border rounded-lg disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-700/50">← Prev</button>
             <span className="text-sm text-gray-500 dark:text-gray-400">Page {sessions.page} of {sessions.pages}</span>

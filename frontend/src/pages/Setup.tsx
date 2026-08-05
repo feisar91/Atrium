@@ -87,7 +87,7 @@ export default function SetupPage() {
   })
 
   const inputClass =
-    'w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+    'w-full border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500'
 
   if (step === 'welcome') {
     return (
@@ -98,16 +98,16 @@ export default function SetupPage() {
             <p className="text-slate-400 text-sm">Multi-tenant captive portal management</p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-2xl p-8 space-y-5 text-center">
-            <div className="w-14 h-14 bg-blue-100 rounded-2xl mx-auto flex items-center justify-center">
-              <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-5 text-center">
+            <div className="w-14 h-14 bg-blue-100 dark:bg-blue-900/30 rounded-2xl mx-auto flex items-center justify-center">
+              <svg className="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
               </svg>
             </div>
 
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Welcome - first time setup</h2>
-              <p className="text-sm text-gray-500 mt-2">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Welcome - first time setup</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                 No administrator account exists yet. Create your superadmin account to get full access to all settings, tenants, and controllers.
               </p>
             </div>
@@ -121,7 +121,7 @@ export default function SetupPage() {
 
             <button
               onClick={() => setStep('restore')}
-              className="w-full text-sm text-gray-500 hover:text-gray-700"
+              className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300"
             >
               Restore from backup
             </button>
@@ -142,17 +142,17 @@ export default function SetupPage() {
 
           <form
             onSubmit={(e) => { e.preventDefault(); restoreMutation.mutate() }}
-            className="bg-white rounded-2xl shadow-2xl p-8 space-y-4"
+            className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-4"
           >
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">Restore from backup</h2>
-              <p className="text-sm text-gray-500 mt-1">
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Restore from backup</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
                 This replaces everything on this install with the contents of the backup file.
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Backup file</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Backup file</label>
               <input
                 type="file"
                 accept=".atriumbak"
@@ -162,7 +162,7 @@ export default function SetupPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
               <input
                 type="password"
                 value={restorePassword}
@@ -184,7 +184,7 @@ export default function SetupPage() {
             <button
               type="button"
               onClick={() => setStep('welcome')}
-              className="w-full text-sm text-gray-500 hover:text-gray-700 py-1"
+              className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 py-1"
             >
               ← Back
             </button>
@@ -204,41 +204,41 @@ export default function SetupPage() {
 
         <form
           onSubmit={handleSubmit((d) => mutation.mutate(d))}
-          className="bg-white rounded-2xl shadow-2xl p-8 space-y-4"
+          className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 space-y-4"
         >
           <div>
-            <h2 className="text-xl font-semibold text-gray-900">Create superadmin account</h2>
-            <p className="text-sm text-gray-500 mt-1">Step 2 of 2 - this account has full system access.</p>
+            <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Create superadmin account</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Step 2 of 2 - this account has full system access.</p>
           </div>
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">First name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First name</label>
               <input {...register('first_name')} className={inputClass} />
               {errors.first_name && <p className="text-red-500 text-xs mt-1">{errors.first_name.message}</p>}
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last name</label>
               <input {...register('last_name')} className={inputClass} />
               {errors.last_name && <p className="text-red-500 text-xs mt-1">{errors.last_name.message}</p>}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
             <input {...register('email')} type="email" autoComplete="email" className={inputClass} />
             {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
             <input {...register('password')} type="password" autoComplete="new-password" className={inputClass} />
-            <p className="text-xs text-gray-400 mt-1">At least 8 characters, including a number and special character (e.g. ! @ # $)</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">At least 8 characters, including a number and special character (e.g. ! @ # $)</p>
             {errors.password && <p className="text-red-500 text-xs mt-1">{errors.password.message}</p>}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Confirm password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Confirm password</label>
             <input {...register('confirm_password')} type="password" autoComplete="new-password" className={inputClass} />
             {errors.confirm_password && (
               <p className="text-red-500 text-xs mt-1">{errors.confirm_password.message}</p>
@@ -247,21 +247,21 @@ export default function SetupPage() {
 
           <div className="flex gap-3">
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Timezone</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Timezone</label>
               <select {...register('timezone')} className={inputClass}>
                 {TIMEZONES.map(tz => <option key={tz} value={tz}>{tz}</option>)}
               </select>
               {errors.timezone && <p className="text-red-500 text-xs mt-1">{errors.timezone.message}</p>}
             </div>
             <div className="flex-1">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Date format</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date format</label>
               <select {...register('date_format')} className={inputClass}>
                 {DATE_FORMATS.map(f => <option key={f} value={f}>{f}</option>)}
               </select>
               {errors.date_format && <p className="text-red-500 text-xs mt-1">{errors.date_format.message}</p>}
             </div>
           </div>
-          <p className="text-xs text-gray-400 -mt-2">Used to display dates and times throughout the admin panel.</p>
+          <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">Used to display dates and times throughout the admin panel.</p>
 
           <button
             type="submit"
@@ -274,7 +274,7 @@ export default function SetupPage() {
           <button
             type="button"
             onClick={() => setStep('welcome')}
-            className="w-full text-sm text-gray-500 hover:text-gray-700 py-1"
+            className="w-full text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 py-1"
           >
             ← Back
           </button>

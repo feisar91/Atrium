@@ -40,7 +40,7 @@ function SortableFieldRow({ field, onEdit, onDelete }: SortableFieldRowProps) {
       style={style}
       className="flex items-center gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-4 py-3"
     >
-      <button {...attributes} {...listeners} className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing">
+      <button {...attributes} {...listeners} className="text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400 cursor-grab active:cursor-grabbing">
         <Bars3Icon className="w-5 h-5" />
       </button>
       <div className="flex-1 min-w-0">

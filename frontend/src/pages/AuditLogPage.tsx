@@ -68,7 +68,7 @@ function RelativeTime({ iso, tz, dateFormat }: { iso: string; tz: string; dateFo
 
 function DetailCell({ detail }: { detail: AuditLog['detail'] }) {
   const [open, setOpen] = useState(false)
-  if (!detail || Object.keys(detail).length === 0) return <span className="text-gray-300">-</span>
+  if (!detail || Object.keys(detail).length === 0) return <span className="text-gray-300 dark:text-gray-600">-</span>
   const preview = Object.entries(detail).slice(0, 2).map(([k, v]) =>
     `${k}: ${Array.isArray(v) ? (v as string[]).join(', ') : String(v)}`
   ).join(' · ')
@@ -78,7 +78,7 @@ function DetailCell({ detail }: { detail: AuditLog['detail'] }) {
         {open ? 'Hide' : 'Show'}
       </button>
       {open && (
-        <pre className="mt-1 text-xs bg-gray-50 dark:bg-gray-900/40 rounded p-2 text-gray-700 dark:text-gray-300 whitespace-pre-wrap max-w-xs">
+        <pre className="mt-1 text-xs bg-gray-50 dark:bg-gray-900/40 rounded p-2 text-gray-700 dark:text-gray-300 whitespace-pre-wrap break-all max-w-xs">
           {JSON.stringify(detail, null, 2)}
         </pre>
       )}
@@ -108,7 +108,7 @@ export default function AuditLogPage() {
           placeholder="Filter by action…"
           value={actionFilter}
           onChange={e => { setActionFilter(e.target.value); setPage(1) }}
-          className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-60"
+          className="border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-60 dark:bg-gray-900 dark:text-gray-100 dark:placeholder-gray-500"
         />
         {actionFilter && (
           <button onClick={() => { setActionFilter(''); setPage(1) }}
@@ -134,14 +134,14 @@ export default function AuditLogPage() {
                   <th className="px-4 py-3 text-left">IP</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {data?.items.map(log => (
                   <tr key={log.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-4 py-3 whitespace-nowrap">
                       <RelativeTime iso={log.created_at} tz={tz} dateFormat={dateFormat} />
                     </td>
                     <td className="px-4 py-3 text-gray-700 dark:text-gray-300 text-xs">
-                      {log.user_email ?? <span className="text-gray-300">system</span>}
+                      {log.user_email ?? <span className="text-gray-300 dark:text-gray-600">system</span>}
                     </td>
                     <td className="px-4 py-3">
                       <ActionBadge action={log.action} />
@@ -161,7 +161,7 @@ export default function AuditLogPage() {
                                   : null}
                           </span>
                         </span>
-                      ) : <span className="text-gray-300">-</span>}
+                      ) : <span className="text-gray-300 dark:text-gray-600">-</span>}
                     </td>
                     <td className="px-4 py-3">
                       <DetailCell detail={log.detail} />

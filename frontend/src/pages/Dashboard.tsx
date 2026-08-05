@@ -60,7 +60,7 @@ export default function Dashboard() {
       </div>
 
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100">
+        <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700">
           <h2 className="font-semibold text-gray-900 dark:text-gray-100">Recent Portals</h2>
         </div>
         <div className="overflow-x-auto">
@@ -74,7 +74,7 @@ export default function Dashboard() {
                 <th className="px-6 py-3 text-left">URL</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {(portals ?? []).slice(0, 10).map(p => (
                 <tr key={p.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-100">{p.name}</td>

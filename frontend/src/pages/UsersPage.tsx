@@ -227,10 +227,10 @@ function EditModal({ user, onClose, actorIsSuperadmin, tenants }: EditModalProps
                       <th className="px-4 py-2 w-8" />
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                     {memberships.map(m => (
                       <tr key={m.id}>
-                        <td className="px-4 py-2 font-medium text-gray-800">{m.tenant_name}</td>
+                        <td className="px-4 py-2 font-medium text-gray-800 dark:text-gray-200">{m.tenant_name}</td>
                         <td className="px-4 py-2">
                           <Badge
                             label={m.role === 'admin' ? 'Admin' : 'Client'}
@@ -255,12 +255,12 @@ function EditModal({ user, onClose, actorIsSuperadmin, tenants }: EditModalProps
             {availableTenants.length > 0 && (
               <div className="flex items-center gap-2">
                 <select value={addTenantId} onChange={e => setAddTenantId(e.target.value)}
-                  className="flex-1 min-w-0 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  className="flex-1 min-w-0 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100">
                   <option value="">Select tenant…</option>
                   {availableTenants.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                 </select>
                 <select value={addRole} onChange={e => setAddRole(e.target.value as 'admin' | 'client')}
-                  className="w-28 flex-shrink-0 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  className="w-28 flex-shrink-0 border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-900 dark:text-gray-100">
                   {TENANT_ROLES.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
                 </select>
                 <button type="button"
@@ -431,7 +431,7 @@ export default function UsersPage() {
                   <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                 {filteredUsers?.map(u => (
                   <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-100">{u.full_name}</td>

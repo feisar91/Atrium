@@ -91,7 +91,7 @@ export default function TenantsPage() {
                 <th className="px-6 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
               {filteredTenants?.map(t => (
                 <tr key={t.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                   <td className="px-6 py-3 font-medium text-gray-900 dark:text-gray-100">{t.name}</td>

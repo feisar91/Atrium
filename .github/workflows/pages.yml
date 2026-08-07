@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "docs/**"
+      - "docs-src/**"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
 
@@ -24,6 +24,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Full history, not just the latest commit - VitePress's
+          # lastUpdated feature reads each page's last-modified date via
+          # `git log`, which a shallow clone can't answer correctly.
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: docs-src/package-lock.json
+      - run: npm ci
+        working-directory: docs-src
+      - run: npm run build
+        working-directory: docs-src
       - uses: actions/configure-pages@v5
       # v3 (and older) intermittently fail deploy-pages with "No artifacts
       # named github-pages were found" - the artifact upload/retrieval

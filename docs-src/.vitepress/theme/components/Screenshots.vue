@@ -77,6 +77,16 @@ const shots: Shot[] = [
     ],
   },
   {
+    src: "/assets/screenshots/users_add_modal.png",
+    alt: "Add User dialog showing name, email, password, and a Role dropdown with a description of that role's access",
+    eyebrow: "Access control",
+    title: "The right access for every teammate",
+    paragraphs: [
+      "Three roles cover most teams: Superadmin has full platform access, Admin manages portals, sites, and users within their tenant, and Client gets read-only access to guest data and analytics.",
+      "Need someone across more than one client? Grant additional Admin or Client memberships in other tenants, independent of their primary role - handy for MSP staff supporting several accounts.",
+    ],
+  },
+  {
     src: "/assets/screenshots/settings_dark.png",
     alt: "Settings page in dark mode showing timezone, date format, and routing configuration",
     eyebrow: "Settings",

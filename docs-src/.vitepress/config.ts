@@ -20,8 +20,8 @@ export default defineConfig({
           "Self-hosted admin panel for running branded guest WiFi captive portals across multiple tenants and sites on a UniFi network.",
       },
     ],
-    ["meta", { property: "og:image", content: "https://agent-squirrel.github.io/Atrium/assets/social-preview.png" }],
-    ["meta", { property: "og:url", content: "https://agent-squirrel.github.io/Atrium/" }],
+    ["meta", { property: "og:image", content: "https://feisar91.github.io/Atrium/assets/social-preview.png" }],
+    ["meta", { property: "og:url", content: "https://feisar91.github.io/Atrium/" }],
     ["meta", { name: "twitter:card", content: "summary_large_image" }],
   ],
 
@@ -48,7 +48,7 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: "github", link: "https://github.com/agent-squirrel/Atrium" }],
+    socialLinks: [{ icon: "github", link: "https://github.com/feisar91/Atrium" }],
 
     search: {
       provider: "local",

@@ -8,7 +8,7 @@ multiple tenants and sites on a UniFi network. It manages the portal-facing
 side of the experience (branded login pages, guest sessions, vouchers) and
 the operational side (controllers, sites, users, auditing) from one place.
 
-**[Website & screenshots](https://agent-squirrel.github.io/Atrium/)**
+**[Website & screenshots](https://feisar91.github.io/Atrium/)**
 
 ## Features
 
@@ -28,7 +28,7 @@ Requires Docker and Docker Compose.
 1. Clone the repo:
 
    ```sh
-   git clone https://github.com/agent-squirrel/Atrium.git
+   git clone https://github.com/feisar91/Atrium.git
    cd Atrium
    ```
 

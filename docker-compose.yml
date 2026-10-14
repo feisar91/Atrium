@@ -22,7 +22,7 @@ services:
 
   backend:
     container_name: atrium-backend
-    image: ghcr.io/agent-squirrel/atrium-backend:latest
+    image: ghcr.io/feisar91/atrium-backend:latest
     restart: unless-stopped
     env_file: ./backend/.env
     volumes:
@@ -36,7 +36,7 @@ services:
 
   web:
     container_name: atrium-web
-    image: ghcr.io/agent-squirrel/atrium-web:latest
+    image: ghcr.io/feisar91/atrium-web:latest
     restart: unless-stopped
     env_file: ./backend/.env
     ports:

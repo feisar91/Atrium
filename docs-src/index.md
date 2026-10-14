@@ -14,7 +14,7 @@ hero:
       link: /install
     - theme: alt
       text: View on GitHub
-      link: https://github.com/agent-squirrel/Atrium
+      link: https://github.com/feisar91/Atrium
 
 features:
   - icon:

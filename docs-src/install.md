@@ -14,7 +14,7 @@ Requires [Docker](https://docs.docker.com/get-docker/) and Docker Compose (bundl
 ## 1. Clone the repo
 
 ```sh
-git clone https://github.com/agent-squirrel/Atrium.git
+git clone https://github.com/feisar91/Atrium.git
 cd Atrium
 ```
 
@@ -57,4 +57,4 @@ In the UniFi controller: **Client Devices → Hotspot → Landing Page**, and en
 
 ---
 
-Building from source, contributing, or want hot-reload for frontend work instead? See [DEVELOPMENT.md](https://github.com/agent-squirrel/Atrium/blob/main/DEVELOPMENT.md).
+Building from source, contributing, or want hot-reload for frontend work instead? See [DEVELOPMENT.md](https://github.com/feisar91/Atrium/blob/main/DEVELOPMENT.md).

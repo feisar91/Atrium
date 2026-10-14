@@ -11,7 +11,7 @@ running it, see the [README](README.md).
 ## Setup
 
 ```sh
-git clone https://github.com/agent-squirrel/Atrium.git
+git clone https://github.com/feisar91/Atrium.git
 cd Atrium
 cp backend/.env.example backend/.env
 # edit backend/.env - fill in SECRET_KEY, JWT_SECRET_KEY, POSTGRES_PASSWORD, ENCRYPTION_KEY

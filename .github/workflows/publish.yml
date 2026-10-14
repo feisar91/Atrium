@@ -36,8 +36,8 @@ jobs:
           build-args: |
             APP_VERSION=${{ steps.version.outputs.version }}
           tags: |
-            ghcr.io/agent-squirrel/atrium-backend:${{ steps.version.outputs.version }}
-            ghcr.io/agent-squirrel/atrium-backend:latest
+            ghcr.io/feisar91/atrium-backend:${{ steps.version.outputs.version }}
+            ghcr.io/feisar91/atrium-backend:latest
 
       - name: Build and push web image
         uses: docker/build-push-action@v6
@@ -46,5 +46,5 @@ jobs:
           file: ./nginx/Dockerfile
           push: true
           tags: |
-            ghcr.io/agent-squirrel/atrium-web:${{ steps.version.outputs.version }}
-            ghcr.io/agent-squirrel/atrium-web:latest
+            ghcr.io/feisar91/atrium-web:${{ steps.version.outputs.version }}
+            ghcr.io/feisar91/atrium-web:latest

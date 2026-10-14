@@ -2,6 +2,9 @@ name: Backend tests
 
 on:
   push:
+    # Tag pushes run these tests via publish.yml instead.
+    branches:
+      - "**"
     paths:
       - "backend/**"
       - ".github/workflows/backend-tests.yml"
@@ -9,6 +12,7 @@ on:
     paths:
       - "backend/**"
       - ".github/workflows/backend-tests.yml"
+  workflow_call:
 
 jobs:
   pytest:

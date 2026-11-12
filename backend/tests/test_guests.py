@@ -230,3 +230,26 @@ def test_authorize_device_unifi_error_still_records_session(client, db_session, 
     session = GuestSession.query.filter_by(portal_id=portal.id, mac_address=mac.lower()).one()
     assert session.auth_success is False
     assert session.auth_error == "controller down"
+
+
+def test_active_devices_without_client_ssids_shows_wireless_guests(client, db_session, auth_headers):
+    """Site Manager controllers can't report a client's SSID - the portal's
+    SSID selection is skipped and wireless guest-access clients are shown."""
+    tenant, admin, controller, site, portal = make_tenant_stack()
+    portal.ssids = ["Captive Test"]
+    db_session.commit()
+
+    with patch("app.api.guests.UnifiClient") as mock_client_cls:
+        mock = mock_client_cls.return_value
+        mock.reports_client_ssid = False
+        mock.get_active_clients.return_value = [
+            {"mac": "aa:bb:cc:00:00:01", "essid": None, "is_guest": True, "is_wired": False},
+            {"mac": "aa:bb:cc:00:00:02", "essid": None, "is_guest": False, "is_wired": False},
+            {"mac": "aa:bb:cc:00:00:03", "essid": None, "is_guest": True, "is_wired": True},
+        ]
+        resp = client.get(f"/api/portals/{portal.id}/active_devices", headers=auth_headers(admin))
+
+    body = resp.get_json()
+    assert resp.status_code == 200
+    assert [d["mac"] for d in body["devices"]] == ["aa:bb:cc:00:00:01"]
+    assert body["ssid_filtered"] is False

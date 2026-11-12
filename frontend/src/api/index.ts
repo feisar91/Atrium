@@ -169,7 +169,7 @@ export const guestsApi = {
   },
 
   activeDevices: (portalId: number) =>
-    api.get<{ devices: UnifiDevice[]; error?: string }>(`/portals/${portalId}/active_devices`),
+    api.get<{ devices: UnifiDevice[]; ssid_filtered?: boolean; error?: string }>(`/portals/${portalId}/active_devices`),
 
   summary: (portalId: number, params?: Omit<GuestFilters, 'page' | 'per_page' | 'search'>) =>
     api.get<AnalyticsSummary>(`/portals/${portalId}/guests/summary`, { params }),

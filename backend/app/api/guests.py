@@ -23,23 +23,27 @@ def get_active_devices(portal_id):
     try:
         client = UnifiClient(portal.site.controller)
         clients = client.get_active_clients(site_id=portal.site.unifi_site_id)
-        if portal.ssids:
+        if not client.reports_client_ssid:
+            # Site Manager (cloud) controllers: the Integration API doesn't say
+            # which SSID a client is on, so a portal's SSID selection can't be
+            # applied. Show every wireless guest-access client on the site.
+            clients = [c for c in clients if c.get("is_guest") and not c.get("is_wired")]
+        elif portal.ssids:
             clients = [c for c in clients if c.get("essid") in portal.ssids]
         else:
             # "All SSIDs" should still mean "every wireless guest client on
             # this site", not literally every device on it. Wired clients
             # (no essid) are never relevant here. When UniFi tells us which
-            # SSIDs have its own "Guest Policy" flag on (local controllers
-            # only - the cloud API doesn't expose WLAN config, so this is
-            # empty there), narrow to those too; an empty result means
-            # "unknown", not "no guest SSIDs", so don't filter on it.
+            # SSIDs have its own "Guest Policy" flag on, narrow to those too;
+            # an empty result means "unknown", not "no guest SSIDs", so don't
+            # filter on it.
             guest_ssids = set(client.get_guest_ssid_names(site_id=portal.site.unifi_site_id))
             clients = [
                 c for c in clients
                 if c.get("essid") and (not guest_ssids or c["essid"] in guest_ssids)
             ]
         devices = [_unifi_device_dict(c) for c in clients]
-        return jsonify({"devices": devices})
+        return jsonify({"devices": devices, "ssid_filtered": bool(client.reports_client_ssid)})
     except UnifiError as e:
         return jsonify({"devices": [], "error": str(e)}), 502
 

@@ -1,4 +1,4 @@
-FROM node:20-alpine AS build
+FROM node:24-alpine AS build
 WORKDIR /app
 COPY frontend/package*.json ./
 RUN npm ci
@@ -6,6 +6,8 @@ COPY frontend/ .
 RUN npm run build
 
 FROM nginx:alpine
+# Pick up Alpine security fixes newer than the base image.
+RUN apk upgrade --no-cache
 COPY --from=build /app/dist /usr/share/nginx/html/admin
 # Templated (not a plain conf) so TRUSTED_PROXY_CIDR can vary per deployment
 # without an image rebuild - the official image's entrypoint runs envsubst

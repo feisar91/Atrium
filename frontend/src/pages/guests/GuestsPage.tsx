@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import toast from 'react-hot-toast'
 import { portalsApi, guestsApi } from '../../api'
 import PageHeader from '../../components/ui/PageHeader'
 import {
   ArrowLeftIcon, ArrowPathIcon, NoSymbolIcon, CheckCircleIcon,
-  ChartBarIcon, SignalIcon, ExclamationTriangleIcon,
+  ChartBarIcon, SignalIcon, ExclamationTriangleIcon, InformationCircleIcon,
 } from '@heroicons/react/24/outline'
 
 const REFRESH_OPTIONS = [
@@ -55,6 +56,10 @@ export default function GuestsPage() {
     queryFn: () => guestsApi.activeDevices(portalId).then(r => r.data),
     refetchInterval,
   })
+  // The backend answers 502 with {"error": "..."} when UniFi refuses a call -
+  // surface that rather than a generic message, it's usually actionable.
+  const controllerError =
+    data?.error ?? (isAxiosError<{ error?: string }>(error) ? error.response?.data?.error : undefined)
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['active_devices', portalId] })
 
@@ -135,12 +140,21 @@ export default function GuestsPage() {
         )}
       </div>
 
+      {data?.ssid_filtered === false && (portal?.ssids?.length ?? 0) > 0 && (
+        <div className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 mb-4">
+          <InformationCircleIcon className="w-4 h-4 flex-shrink-0 mt-px" />
+          Showing all guest devices on this site. UniFi Site Manager doesn't report which SSID a device is on,
+          so this portal's SSID selection can't be applied here.
+        </div>
+      )}
+
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-x-auto">
         {isLoading ? (
           <div className="p-8 text-center text-gray-400 dark:text-gray-500">Fetching devices from controller...</div>
         ) : error || data?.error ? (
-          <div className="p-8 text-center text-red-400">
-            Could not reach the UniFi controller. Check connectivity and credentials.
+          <div className="p-8 text-center text-red-400 space-y-1">
+            <p>Could not load devices from the UniFi controller.</p>
+            {controllerError && <p className="text-xs text-red-400/80 break-words">{controllerError}</p>}
           </div>
         ) : (
           <table className="w-full text-sm">

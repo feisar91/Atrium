@@ -22,6 +22,34 @@ an API key generated in **UniFi OS → Integrations** (API keys bypass 2FA on
 the controller account, which is usually the more convenient option for an
 integration like this).
 
+For **UniFi Site Manager**, create an API key at **unifi.ui.com → Settings →
+API Keys** with an account that owns the console. Atrium reaches the console
+through Site Manager's connector to UniFi Network's official Integration API,
+so the console needs a recent UniFi Network version (9.1 or later).
+
+::: warning Site Manager limitations
+UniFi only lets Site Manager keys reach the Integration API, which is more
+limited than a self-hosted connection:
+
+- **Active Devices can't filter by SSID.** UniFi doesn't report which SSID a
+  device is on, so a portal shows every guest device on its site. If you run
+  more than one guest portal per site, use a self-hosted connection instead.
+- **Guest access can only be changed for connected devices.** Reconnecting
+  or deauthorizing a guest who has already left the network fails until
+  they're back in range.
+- **Manually authorized devices have no SSID recorded.** Authorizing a device
+  from Active Devices (one that never finished the portal) saves its guest
+  session without an SSID. Guests who sign in through the portal are
+  unaffected.
+- **Bandwidth limits are capped at 100 Mbps.** UniFi accepts guest rate
+  limits of 2 to 100,000 kbps, so a portal limit above 100 Mbps is applied
+  as 100 Mbps.
+- **No signal strength** on the Active Devices page.
+
+Choosing a portal by SSID works the same as on self-hosted controllers: UniFi
+includes the SSID when it redirects a guest to Atrium.
+:::
+
 A controller can be **platform-owned** (visible to superadmins only) or
 **tenant-owned** - assigning a controller to a tenant grants every user in
 that tenant visibility of every site on it. Set an automatic sync interval

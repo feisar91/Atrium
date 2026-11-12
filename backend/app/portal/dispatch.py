@@ -6,12 +6,14 @@ Landing Page, UniFi redirects connecting guests to:
 
   http://<ip>/guest/s/<site_name>/?id=<mac>&ap=<ap_mac>&ssid=<ssid>&t=<ts>&url=<url>
 
-The site_name in the path is UniFi's internal site ID (e.g. "default" or a hash).
-This maps directly to UnifiSite.unifi_site_id, so we can resolve the correct portal
-without needing to know anything about the URL in advance.
+The site_name in the path is UniFi's internal site name (e.g. "default" or a
+hash). That's UnifiSite.unifi_site_id on self-hosted controllers, and
+UnifiSite.internal_name on both (Site Manager controllers store the Site
+Manager siteId as unifi_site_id), so we can resolve the correct portal without
+needing to know anything about the URL in advance.
 
 Lookup order:
-  1. Match UnifiSite by unifi_site_id from the URL path.
+  1. Match UnifiSite by unifi_site_id or internal_name from the URL path.
   2. Among that site's portals, prefer one whose ssids list contains the SSID param.
      If no SSID-specific portal exists, fall back to the site-wide portal (empty ssids).
   3. If multiple controllers share the same internal site name, use the AP MAC
@@ -21,6 +23,7 @@ Lookup order:
 
 import logging
 from flask import request, redirect, url_for, render_template_string
+from sqlalchemy import or_
 from app.models import AccessPoint, UnifiSite, Portal
 from . import dispatch_bp
 
@@ -71,13 +74,17 @@ def portal_dispatch(unifi_site_id: str):
     portal = None
 
     # ── Primary: resolve by site ID from URL path ────────────────────────────
-    sites = UnifiSite.query.filter_by(unifi_site_id=unifi_site_id, is_active=True).all()
+    sites = UnifiSite.query.filter(
+        or_(UnifiSite.unifi_site_id == unifi_site_id, UnifiSite.internal_name == unifi_site_id),
+        UnifiSite.is_active.is_(True),
+    ).order_by(UnifiSite.id).all()
 
     if sites:
         site = sites[0]
 
-        # If the same internal site name exists on multiple controllers, use
-        # the AP MAC (populated during controller sync) to pick the right one.
+        # If the same internal site name exists on multiple controllers (every
+        # console's first site is "default"), use the AP MAC (populated during
+        # controller sync) to pick the right one.
         if len(sites) > 1 and ap_mac:
             ap_record = AccessPoint.query.filter_by(mac_address=ap_mac).first()
             if ap_record:

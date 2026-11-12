@@ -7,8 +7,13 @@ class UnifiSite(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    # The internal site ID as used by the Unifi controller (e.g. "default" or a hash)
+    # The site's ID on its controller: the internal site name (e.g. "default")
+    # for self-hosted controllers, the Site Manager siteId for cloud ones.
     unifi_site_id = db.Column(db.String(100), nullable=False)
+    # The internal site name UniFi uses in the hotspot redirect
+    # (/guest/s/<internal_name>/). Equals unifi_site_id on self-hosted
+    # controllers; set by sync. Dispatch matches on either.
+    internal_name = db.Column(db.String(100), nullable=True, index=True)
     name = db.Column(db.String(200), nullable=False)
     description = db.Column(db.String(500))
 

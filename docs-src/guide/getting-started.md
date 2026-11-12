@@ -37,7 +37,17 @@ limited than a self-hosted connection:
 - **Guest access can only be changed for connected devices.** Reconnecting
   or deauthorizing a guest who has already left the network fails until
   they're back in range.
+- **Manually authorized devices have no SSID recorded.** Authorizing a device
+  from Active Devices (one that never finished the portal) saves its guest
+  session without an SSID. Guests who sign in through the portal are
+  unaffected.
+- **Bandwidth limits are capped at 100 Mbps.** UniFi accepts guest rate
+  limits of 2 to 100,000 kbps, so a portal limit above 100 Mbps is applied
+  as 100 Mbps.
 - **No signal strength** on the Active Devices page.
+
+Choosing a portal by SSID works the same as on self-hosted controllers: UniFi
+includes the SSID when it redirects a guest to Atrium.
 :::
 
 A controller can be **platform-owned** (visible to superadmins only) or

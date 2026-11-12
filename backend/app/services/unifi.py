@@ -24,7 +24,11 @@ cloud        UniFi Site Manager at api.ui.com.
              - no signal strength
 """
 
+import hashlib
 import logging
+import threading
+import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -36,6 +40,20 @@ CLOUD_API_BASE = "https://api.ui.com"
 
 # Integration API list endpoints cap a page at 200 items.
 _INTEGRATION_PAGE_SIZE = 200
+
+# Cloud site resolution (Site Manager siteId -> connector base + Integration
+# API site id) costs two round trips through api.ui.com and practically never
+# changes, so it's shared across requests. UnifiClient is built per request,
+# so an instance-level cache would never be reused. Keyed by a fingerprint of
+# the API key, so a rotated key or another controller never reuses an entry.
+_CLOUD_SITE_TTL_SECONDS = 3600
+_cloud_site_cache: dict[tuple[str, str], tuple[float, str, str]] = {}
+_cloud_site_cache_lock = threading.Lock()
+
+
+def clear_cloud_site_cache() -> None:
+    with _cloud_site_cache_lock:
+        _cloud_site_cache.clear()
 # AUTHORIZE_GUEST_ACCESS accepts rate limits in this range (kbps).
 _MIN_RATE_KBPS, _MAX_RATE_KBPS = 2, 100_000
 
@@ -57,8 +75,7 @@ class UnifiClient:
             })
             self._logged_in = True
             self._is_unifi_os = False  # not used for cloud path
-            # Site Manager siteId -> (connector Integration API base, integration site id)
-            self._cloud_sites: dict[str, tuple[str, str]] = {}
+            self._key_fingerprint = hashlib.sha256((controller.api_key or "").encode()).hexdigest()[:16]
         else:
             self.base_url = controller.url.rstrip("/")
             self._session.verify = controller.verify_ssl
@@ -149,9 +166,13 @@ class UnifiClient:
         """Resolve a Site Manager siteId (what Atrium stores) to the connector
         base URL for its console and the console's own Integration API site id.
         Site Manager's meta.name is the site's internal name ("default"), which
-        the Integration API exposes as internalReference."""
-        if site_id in self._cloud_sites:
-            return self._cloud_sites[site_id]
+        the Integration API exposes as internalReference. Cached for
+        _CLOUD_SITE_TTL_SECONDS across requests."""
+        cache_key = (self._key_fingerprint, site_id)
+        with _cloud_site_cache_lock:
+            hit = _cloud_site_cache.get(cache_key)
+        if hit and hit[0] > time.monotonic():
+            return hit[1], hit[2]
 
         r = self._session.get(f"{self.base_url}/ea/sites", timeout=15)
         _raise_for_status(r)
@@ -170,8 +191,10 @@ class UnifiClient:
         if not matches:
             raise UnifiError(f"Console has no Network site with internal name '{internal_ref}'")
 
-        self._cloud_sites[site_id] = (base, matches[0]["id"])
-        return self._cloud_sites[site_id]
+        isite = matches[0]["id"]
+        with _cloud_site_cache_lock:
+            _cloud_site_cache[cache_key] = (time.monotonic() + _CLOUD_SITE_TTL_SECONDS, base, isite)
+        return base, isite
 
     def _integration_list(self, url: str, params: Optional[dict] = None) -> list[dict]:
         """GET every page of an Integration API list endpoint."""
@@ -303,10 +326,16 @@ class UnifiClient:
             return self._get(site_id, "stat/sta").get("data", [])
 
         base, isite = self._cloud_site(site_id)
-        ap_macs = {d["id"]: d["mac"] for d in self.get_devices(site_id) if d.get("id")}
+        # Devices (for each client's AP MAC) and clients are independent
+        # round trips through api.ui.com - fetch them side by side.
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            devices_f = pool.submit(self.get_devices, site_id)
+            clients_f = pool.submit(self._integration_list, f"{base}/sites/{isite}/clients")
+            ap_macs = {d["id"]: d["mac"] for d in devices_f.result() if d.get("id")}
+            raw_clients = clients_f.result()
         now = datetime.now(timezone.utc)
         clients = []
-        for c in self._integration_list(f"{base}/sites/{isite}/clients"):
+        for c in raw_clients:
             access = c.get("access") or {}
             clients.append({
                 "mac": (c.get("macAddress") or "").lower(),

@@ -111,11 +111,18 @@ def _routes(**overrides):
     return routes
 
 
+@pytest.fixture(autouse=True)
+def _fresh_site_cache():
+    unifi.clear_cloud_site_cache()
+    yield
+    unifi.clear_cloud_site_cache()
+
+
 @pytest.fixture
 def cloud():
     """A cloud UnifiClient wired to a FakeSession; returns (client, session)."""
-    def build(routes=None):
-        controller = SimpleNamespace(controller_type="cloud", api_key="test-key")
+    def build(routes=None, api_key="test-key"):
+        controller = SimpleNamespace(controller_type="cloud", api_key=api_key)
         client = UnifiClient(controller)
         session = FakeSession(routes or _routes())
         session.headers.update(client._session.headers)
@@ -124,12 +131,35 @@ def cloud():
     return build
 
 
-def test_cloud_site_resolved_once_and_cached(cloud):
+def _site_lookups(session):
+    return [c for c in session.calls if c[1] in ("https://api.ui.com/ea/sites", f"{BASE}/sites")]
+
+
+def test_cloud_site_resolution_shared_across_client_instances(cloud):
+    # Endpoints build a new UnifiClient per request - the cache must outlive it.
+    first, first_session = cloud()
+    first.get_wlans(SM_SITE)
+    second, second_session = cloud()
+    second.get_wlans(SM_SITE)
+    assert len(_site_lookups(first_session)) == 2  # Site Manager lookup + site match
+    assert _site_lookups(second_session) == []
+
+
+def test_cloud_site_cache_expires(cloud, monkeypatch):
+    clock = [1000.0]
+    monkeypatch.setattr(unifi.time, "monotonic", lambda: clock[0])
     client, session = cloud()
     client.get_wlans(SM_SITE)
+    clock[0] += unifi._CLOUD_SITE_TTL_SECONDS + 1
     client.get_wlans(SM_SITE)
-    lookups = [c for c in session.calls if c[1] in ("https://api.ui.com/ea/sites", f"{BASE}/sites")]
-    assert len(lookups) == 2  # one Site Manager lookup + one site match, then cached
+    assert len(_site_lookups(session)) == 4
+
+
+def test_cloud_site_cache_separate_per_api_key(cloud):
+    cloud(api_key="key-a")[0].get_wlans(SM_SITE)
+    other, session = cloud(api_key="key-b")
+    other.get_wlans(SM_SITE)
+    assert len(_site_lookups(session)) == 2
 
 
 def test_unknown_site_raises(cloud):

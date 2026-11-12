@@ -216,14 +216,17 @@ def _do_sync(controller: UnifiController, client: UnifiClient) -> dict:
             controller_id=controller.id,
             unifi_site_id=site["name"],
         ).first()
+        internal_name = site.get("internal_name") or site["name"]
         if existing:
             existing.name = site.get("desc", site["name"])
+            existing.internal_name = internal_name
             synced.append(existing)
         else:
             auto_tenant = controller.tenant_id if not controller.is_platform_owned else None
             new_site = UnifiSite(
                 controller_id=controller.id,
                 unifi_site_id=site["name"],
+                internal_name=internal_name,
                 name=site.get("desc", site["name"]),
                 tenant_id=auto_tenant,
             )

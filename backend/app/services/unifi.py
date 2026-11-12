@@ -223,13 +223,19 @@ class UnifiClient:
         return not self._is_cloud
 
     def get_sites(self) -> list[dict]:
-        """Return sites as [{"name": <site_id>, "desc": <display_name>}, ...]."""
+        """Return sites as [{"name": <site_id>, "desc": <display_name>,
+        "internal_name": <name used in hotspot redirects>}, ...]. On
+        self-hosted, name already is the internal name."""
         if self._is_cloud:
             r = self._session.get(f"{self.base_url}/ea/sites", timeout=15)
             _raise_for_status(r)
             items = r.json().get("data", [])
             return [
-                {"name": item["siteId"], "desc": item.get("meta", {}).get("desc", item["siteId"])}
+                {
+                    "name": item["siteId"],
+                    "desc": item.get("meta", {}).get("desc", item["siteId"]),
+                    "internal_name": item.get("meta", {}).get("name"),
+                }
                 for item in items
             ]
         else:

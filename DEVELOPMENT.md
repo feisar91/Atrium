@@ -6,7 +6,7 @@ running it, see the [README](README.md).
 ## Prerequisites
 
 - Docker and Docker Compose
-- Node.js 20+ (only needed for frontend hot-reload dev mode, not for building via Docker)
+- Node.js 22+ (only needed for frontend hot-reload dev mode, not for building via Docker)
 
 ## Setup
 

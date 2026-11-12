@@ -86,3 +86,59 @@ def test_get_display_settings_reachable_by_non_superadmin(client, db_session, au
 def test_get_display_settings_requires_auth(client, db_session):
     resp = client.get("/api/settings/display")
     assert resp.status_code == 401
+
+
+# ── /settings/my-ip: Docker gateway detection ────────────────────────────────
+
+_ROUTE_TABLE = (
+    "Iface\tDestination\tGateway \tFlags\tRefCnt\tUse\tMetric\tMask\t\tMTU\tWindow\tIRTT\n"
+    "eth0\t00000000\t010013AC\t0003\t0\t0\t0\t00000000\t0\t0\t0\n"   # default via 172.19.0.1
+    "eth0\t000013AC\t00000000\t0001\t0\t0\t0\t0000FFFF\t0\t0\t0\n"   # 172.19.0.0/16 link
+)
+
+
+def _patch_route_table(monkeypatch, content):
+    import builtins
+    import io
+    from app.api import settings as settings_mod
+
+    real_open = builtins.open
+
+    def fake_open(path, *args, **kwargs):
+        if path == "/proc/net/route":
+            if content is None:
+                raise FileNotFoundError(path)
+            return io.StringIO(content)
+        return real_open(path, *args, **kwargs)
+
+    monkeypatch.setattr(builtins, "open", fake_open)
+    settings_mod._container_gateway_ip.cache_clear()
+    return settings_mod
+
+
+def test_container_gateway_ip_parses_default_route(monkeypatch):
+    settings_mod = _patch_route_table(monkeypatch, _ROUTE_TABLE)
+    try:
+        assert settings_mod._container_gateway_ip() == "172.19.0.1"
+    finally:
+        settings_mod._container_gateway_ip.cache_clear()
+
+
+def test_container_gateway_ip_none_without_route_table(monkeypatch):
+    settings_mod = _patch_route_table(monkeypatch, None)
+    try:
+        assert settings_mod._container_gateway_ip() is None
+    finally:
+        settings_mod._container_gateway_ip.cache_clear()
+
+
+def test_my_ip_flags_docker_gateway(client, monkeypatch):
+    settings_mod = _patch_route_table(monkeypatch, _ROUTE_TABLE)
+    try:
+        resp = client.get("/api/settings/my-ip", headers={"X-Real-IP": "172.19.0.1"})
+        assert resp.get_json() == {"ip": "172.19.0.1", "is_proxy_gateway": True}
+
+        resp = client.get("/api/settings/my-ip", headers={"X-Real-IP": "192.168.1.50"})
+        assert resp.get_json() == {"ip": "192.168.1.50", "is_proxy_gateway": False}
+    finally:
+        settings_mod._container_gateway_ip.cache_clear()

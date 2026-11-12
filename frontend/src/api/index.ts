@@ -199,7 +199,7 @@ export type PlatformSettings = {
 }
 
 export const settingsApi = {
-  getMyIp: () => api.get<{ ip: string }>('/settings/my-ip'),
+  getMyIp: () => api.get<{ ip: string; is_proxy_gateway: boolean }>('/settings/my-ip'),
   getDisplaySettings: () => api.get<{ timezone: string; date_format: string }>('/settings/display'),
   getVersion: () => api.get<{ app_version: string; schema_revision: string | null }>('/settings/version'),
   getEmailStatus: () => api.get<{ enabled: boolean }>('/settings/email/status'),

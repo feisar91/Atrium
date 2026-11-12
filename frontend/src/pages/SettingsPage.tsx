@@ -253,7 +253,10 @@ export default function SettingsPage() {
   const maintenanceOn = form.maintenance_mode === 'true'
   const hasIpRestriction = form.admin_allowed_ips.trim().length > 0
   const myIp = myIpData?.ip ?? ''
-  const ipNotInList = hasIpRestriction && myIp &&
+  // The "IP" is Docker's bridge gateway, not the browser's address - see
+  // /settings/my-ip. Allow-listing it would admit everything relayed the same way.
+  const ipIsProxyGateway = myIpData?.is_proxy_gateway ?? false
+  const ipNotInList = hasIpRestriction && myIp && !ipIsProxyGateway &&
     !form.admin_allowed_ips.split('\n').some(cidr => cidr.trim() === `${myIp}/32` || cidr.trim() === myIp)
 
   const saveBar = (
@@ -488,6 +491,23 @@ export default function SettingsPage() {
                     </span>
                   )}
                 </p>
+              )}
+              {ipIsProxyGateway && (
+                <div className="flex gap-2 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-lg px-3 py-2 mb-2 text-xs text-amber-800 dark:text-amber-300">
+                  <ExclamationTriangleIcon className="w-4 h-4 flex-shrink-0 mt-px" />
+                  <div className="space-y-1">
+                    <p className="font-semibold">This is Docker's network gateway, not your real IP.</p>
+                    <p>
+                      Docker passed this connection through its port proxy, which hides the original address.
+                      That happens over IPv6, when browsing to localhost, and under Docker Desktop or WSL.
+                      Don't add {myIp} to the list: anyone who connects the same way would be allowed in.
+                    </p>
+                    <p>
+                      To see your real IP, browse to the server's IPv4 address instead. If Atrium sits behind
+                      another reverse proxy, set <span className="font-mono">TRUSTED_PROXY_CIDR</span> to that proxy's address.
+                    </p>
+                  </div>
+                </div>
               )}
               <textarea
                 value={form.admin_allowed_ips}

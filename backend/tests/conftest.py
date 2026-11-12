@@ -4,9 +4,12 @@ from urllib.parse import urlparse
 import pytest
 from cryptography.fernet import Fernet
 
-TEST_DATABASE_URL = os.environ.get(
-    "TEST_DATABASE_URL",
-    "postgresql://atrium_user:REDACTED@db:5432/captive_portal_test",
+# Defaults to the dev Compose stack's database server ("db"), using the
+# credentials the backend container already gets from backend/.env.
+TEST_DATABASE_URL = os.environ.get("TEST_DATABASE_URL") or (
+    f"postgresql://{os.environ.get('POSTGRES_USER', 'captive')}"
+    f":{os.environ.get('POSTGRES_PASSWORD', 'captive')}"
+    "@db:5432/captive_portal_test"
 )
 
 # Set at conftest import time (before pytest collects sibling test modules) -

@@ -1,0 +1,13 @@
+# Keep the runtime image to what the app needs. Tests run on the host in CI
+# and via the dev stack's bind mount, so they never need to be baked in.
+tests/
+requirements-dev.txt
+pytest.ini
+.env
+.env.*
+!.env.example
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.coverage
+htmlcov/

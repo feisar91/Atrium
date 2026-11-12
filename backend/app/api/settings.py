@@ -4,7 +4,10 @@ from app.models import PlatformSetting, GuestSession, Portal, EmailSettings, Ema
 from app.backup import _current_schema_revision
 from . import api_bp
 from .decorators import require_superadmin, require_admin, require_auth, get_current_user
+import socket
+import struct
 from datetime import datetime, timezone, timedelta
+from functools import lru_cache
 from zoneinfo import available_timezones
 
 SETTING_DEFS = {
@@ -66,11 +69,37 @@ def get_setting(key: str) -> str:
 
 
 
+@lru_cache(maxsize=1)
+def _container_gateway_ip() -> str | None:
+    """This container's default gateway, from /proc/net/route - under Docker,
+    the bridge network's gateway. None outside Linux or with no default route.
+
+    Cached: the gateway is fixed for the life of the container."""
+    try:
+        with open("/proc/net/route") as f:
+            next(f)  # header
+            for line in f:
+                fields = line.split()
+                if len(fields) > 2 and fields[1] == "00000000":  # default route
+                    return socket.inet_ntoa(struct.pack("<L", int(fields[2], 16)))
+    except (OSError, ValueError, StopIteration):
+        pass
+    return None
+
+
 @api_bp.route("/settings/my-ip", methods=["GET"])
 def get_my_ip():
-    """Returns the client IP as seen by the server - useful when configuring IP restrictions."""
+    """Returns the client IP as seen by the server - useful when configuring IP restrictions.
+
+    is_proxy_gateway flags the case where that "IP" is really Docker's bridge
+    gateway: connections Docker relays through docker-proxy (IPv6 clients,
+    loopback/localhost, Docker Desktop and WSL port forwarding) arrive with
+    the gateway as their source, so the real client address never reaches
+    nginx. Allow-listing it would admit everyone who arrives that way.
+    """
     ip = request.headers.get("X-Real-IP") or request.remote_addr or "unknown"
-    return jsonify({"ip": ip})
+    gateway = _container_gateway_ip()
+    return jsonify({"ip": ip, "is_proxy_gateway": gateway is not None and ip == gateway})
 
 
 @api_bp.route("/settings/display", methods=["GET"])
